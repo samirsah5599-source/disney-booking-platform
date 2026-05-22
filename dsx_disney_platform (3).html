@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disney Café × Starbucks · Phygital Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{
+ --disney:#1a3a8f;--disney2:#3b6fd4;--disney-glow:#5b8def;--gold:#E8C66B;--gold2:#CBA258;
+ --green:#00704A;--magic:#7c4dff;--magic2:#b388ff;--dark:#0a1428;--panel:rgba(255,255,255,0.05);
+ --panel-br:rgba(255,255,255,0.1);--txt:#fff;--muted:rgba(255,255,255,0.55);
+ --purple:#a5b4fc;--teal:#5eead4;--coral:#fb923c;--red:#f87171;--pink:#f472b6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--txt);overflow-x:hidden}
+.mono{font-family:'DM Mono',monospace}
+.fred{font-family:'Fredoka',sans-serif}
+a{color:inherit}
+
+/* mouse-ear logo motif */
+.ears{display:inline-block;position:relative;width:24px;height:20px}
+.ears::before,.ears::after{content:'';position:absolute;width:11px;height:11px;border-radius:50%;background:currentColor;top:0}
+.ears::before{left:0}.ears::after{right:0}
+.ears span{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:18px;height:15px;border-radius:50%;background:currentColor}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;justify-content:space-between;align-items:center;padding:13px 30px;background:rgba(10,20,40,0.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--panel-br)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px}
+.nav-logo .ears{color:var(--gold)}
+.view-switch{display:flex;background:rgba(255,255,255,.07);border-radius:100px;padding:4px;gap:3px}
+.vs-btn{padding:7px 15px;border-radius:100px;font-size:13px;font-weight:500;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.vs-btn.active{background:var(--gold);color:var(--dark)}
+.nav-links{display:flex;gap:18px;align-items:center}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s}
+.nav-links a:hover{color:#fff}
+.nav-ext{font-size:11px;padding:4px 10px;border:1px solid var(--panel-br);border-radius:100px}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.pulse{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(74,222,128,.5)}50%{opacity:.6;box-shadow:0 0 0 6px rgba(74,222,128,0)}}
+
+.view{display:none;padding-top:60px}
+.view.active{display:block}
+section{padding:72px 30px}
+.inner{max-width:1140px;margin:0 auto}
+.lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.title{font-family:'Fredoka',sans-serif;font-size:38px;font-weight:600;line-height:1.12;margin-bottom:12px}
+.sub{font-size:15px;color:var(--muted);line-height:1.6;max-width:580px;margin-bottom:38px}
+.btn{padding:13px 26px;border-radius:100px;font-size:14px;font-weight:500;border:none;cursor:pointer;text-decoration:none;display:inline-block;transition:all .2s}
+.btn-p{background:var(--gold);color:var(--dark)}.btn-p:hover{background:#f0d27e;transform:translateY(-1px)}
+.btn-o{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}.btn-o:hover{background:rgba(255,255,255,.08)}
+.btn-sm{background:var(--green);color:#fff;padding:6px 14px;border-radius:100px;font-size:11px;font-weight:500;border:none;cursor:pointer}
+.btn-sm:hover{opacity:.88}
+.card{background:var(--panel);border:1px solid var(--panel-br);border-radius:18px;padding:24px}
+input[type=range]{-webkit-appearance:none;height:5px;border-radius:3px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 0 4px rgba(232,198,107,.2)}
+
+/* HERO */
+.hero{position:relative;min-height:90vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:background-image .4s}
+.hero-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(10,20,40,.92),rgba(26,58,143,.55) 55%,rgba(10,20,40,.9))}
+.stars-bg{position:absolute;inset:0;z-index:1;opacity:.6}
+.holo-mascot{position:absolute;right:6%;top:50%;transform:translateY(-50%);width:330px;height:380px;z-index:2;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(-50%)}50%{transform:translateY(-58%)}}
+.hero-c{position:relative;z-index:3;text-align:center;max-width:760px;padding:0 24px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(232,198,107,.12);border:1px solid rgba(232,198,107,.3);border-radius:100px;padding:6px 16px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:22px}
+.hero h1{font-family:'Fredoka',sans-serif;font-size:62px;font-weight:700;line-height:1.04;margin-bottom:16px}
+.hero h1 .gold{color:var(--gold)}.hero h1 .mag{color:var(--magic2)}
+.hero-sub{font-size:17px;color:rgba(255,255,255,.7);line-height:1.55;max-width:540px;margin:0 auto 30px}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.img-swap{position:absolute;bottom:20px;left:20px;z-index:5}
+.img-swap label{font-size:11px;padding:7px 14px;background:rgba(0,0,0,.5);border:1px solid var(--panel-br);border-radius:100px;cursor:pointer;backdrop-filter:blur(8px)}
+.img-swap input{display:none}
+
+/* FREQUENCY HERO STAT */
+.freq-band{background:linear-gradient(135deg,var(--disney),var(--magic));padding:46px 30px}
+.freq-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center}
+@media(max-width:760px){.freq-inner{grid-template-columns:1fr;text-align:center}}
+.freq-box{text-align:center}
+.freq-num{font-family:'Fredoka',sans-serif;font-size:46px;font-weight:700;color:#fff}
+.freq-cap{font-size:13px;color:rgba(255,255,255,.8);margin-top:4px}
+.freq-vs{font-family:'Fredoka',sans-serif;font-size:24px;color:var(--gold)}
+
+/* SHOP */
+.shop-sec{background:linear-gradient(180deg,var(--dark),#0c1830)}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.product{background:var(--panel);border:1px solid var(--panel-br);border-radius:18px;overflow:hidden;transition:all .2s}
+.product:hover{transform:translateY(-4px);border-color:rgba(232,198,107,.35)}
+.product-img{height:180px;background:linear-gradient(135deg,#16234a,#1f3a6e);display:flex;align-items:center;justify-content:center;position:relative;background-size:cover;background-position:center}
+.product-emoji{font-size:60px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4))}
+.prod-badge{position:absolute;top:10px;left:10px;background:var(--magic);padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600}
+.prod-le{position:absolute;top:10px;right:10px;background:var(--gold);color:var(--dark);padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600}
+.product-b{padding:16px}
+.prod-t{font-size:15px;font-weight:500;margin-bottom:4px}
+.prod-d{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.45}
+.prod-foot{display:flex;justify-content:space-between;align-items:center}
+.prod-price{font-family:'DM Mono',monospace;font-size:16px;color:var(--gold)}
+.stock-bar{height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-top:10px}
+.stock-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--gold))}
+.stock-txt{font-size:10px;color:var(--coral);margin-top:5px;font-family:'DM Mono',monospace}
+
+/* CAMERA / PHOTO BOOTH */
+.cam-sec{background:#0c1830}
+.cam-wrap{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+@media(max-width:800px){.cam-wrap{grid-template-columns:1fr}}
+.cam-stage{position:relative;background:#000;border-radius:18px;overflow:hidden;aspect-ratio:4/3;border:1px solid var(--panel-br)}
+#camVideo{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#camCanvas{display:none}
+.cam-overlay{position:absolute;inset:0;pointer-events:none;display:flex;align-items:flex-start;justify-content:center;padding-top:8%}
+.cam-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);text-align:center;padding:30px}
+.cam-frame-watermark{position:absolute;bottom:14px;right:16px;font-family:'Fredoka',sans-serif;font-size:14px;color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.6);display:flex;align-items:center;gap:6px}
+.cam-controls{display:flex;flex-direction:column;gap:12px}
+
+/* OFFERS / BOOKING / GAME reuse */
+.radius-bar{display:flex;align-items:center;gap:14px;margin-bottom:26px;background:var(--panel);border:1px solid var(--panel-br);border-radius:12px;padding:14px 18px;flex-wrap:wrap}
+.radius-bar .mono{font-size:13px;color:var(--muted);white-space:nowrap}
+.radius-bar input[type=range]{flex:1;min-width:130px}
+.offer{background:var(--panel);border:1px solid var(--panel-br);border-radius:18px;overflow:hidden;transition:all .2s}
+.offer:hover{transform:translateY(-4px);border-color:rgba(232,198,107,.3)}
+.offer-img{height:155px;background-size:cover;background-position:center;position:relative}
+.o-badge{position:absolute;top:10px;left:10px;background:var(--gold);color:var(--dark);padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600}
+.o-dist{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);padding:3px 9px;border-radius:100px;font-size:10px}
+.offer-b{padding:16px}.o-title{font-size:14px;font-weight:500;margin-bottom:5px}.o-desc{font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:12px}
+.o-foot{display:flex;justify-content:space-between;align-items:center}
+.o-price{font-family:'DM Mono',monospace;font-size:16px;color:var(--gold)}.o-price s{font-size:11px;color:rgba(255,255,255,.3);margin-right:5px}
+
+.book-layout{display:grid;grid-template-columns:1fr 340px;gap:26px;align-items:start}
+@media(max-width:900px){.book-layout{grid-template-columns:1fr}}
+.legend{display:flex;gap:13px;margin-bottom:16px;flex-wrap:wrap}
+.lg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}.lg-d{width:11px;height:11px;border-radius:3px}
+.tables{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media(max-width:600px){.tables{grid-template-columns:repeat(4,1fr)}}
+.tbl{aspect-ratio:1;border-radius:10px;border:2px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:transparent;font-family:'DM Mono',monospace;transition:all .15s}
+.tbl.av{border-color:var(--green);color:#4ade80}.tbl.av:hover{background:rgba(0,112,74,.18);transform:scale(1.06)}
+.tbl.vip{border-color:var(--disney2);color:var(--disney-glow)}.tbl.vip:hover{background:rgba(59,111,212,.18);transform:scale(1.06)}
+.tbl.oc{border-color:rgba(255,255,255,.13);color:rgba(255,255,255,.2);cursor:not-allowed}
+.tbl.sel{border-color:var(--gold);color:var(--gold);background:rgba(232,198,107,.12)}
+.tn{font-size:15px;font-weight:500}.tc{font-size:8px;opacity:.7}
+.fg{margin-bottom:13px}.fl{font-size:11px;color:var(--muted);margin-bottom:5px;display:block;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:10px 13px;color:#fff;font-size:14px;font-family:inherit;outline:none}
+.fi:focus{border-color:var(--gold)}.fi option{background:#16234a}
+.sel-info{background:rgba(232,198,107,.08);border:1px solid rgba(232,198,107,.25);border-radius:9px;padding:11px 13px;margin-bottom:13px;font-size:12px}.sel-info strong{color:var(--gold)}
+.btn-book{width:100%;background:var(--gold);color:var(--dark);padding:13px;border-radius:11px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.btn-book:hover{opacity:.9}.btn-book:disabled{opacity:.4;cursor:not-allowed}
+.succ{display:none;text-align:center;padding:16px;background:rgba(0,112,74,.15);border:1px solid rgba(0,112,74,.3);border-radius:11px;margin-top:10px}
+.succ-i{font-size:30px}.succ-t{font-size:14px;font-weight:500;color:#4ade80;margin:5px 0 3px}.succ-s{font-size:12px;color:var(--muted)}
+
+.room{background:var(--panel);border:1px solid var(--panel-br);border-radius:18px;overflow:hidden;transition:all .2s}
+.room:hover{transform:translateY(-4px);border-color:rgba(59,111,212,.35)}
+.room-img{height:140px;background-size:cover;background-position:center;position:relative}
+.room-tag{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.65);padding:4px 10px;border-radius:100px;font-size:10px;font-family:'DM Mono',monospace}
+.room-b{padding:16px}.room-title{font-size:15px;font-weight:500;margin-bottom:4px}.room-desc{font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:13px}
+.room-foot{display:flex;justify-content:space-between;align-items:center}.room-price{font-family:'DM Mono',monospace;font-size:14px;color:var(--gold)}
+.rs{font-size:10px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:100px}.rs-soon{background:rgba(251,146,60,.2);color:var(--coral)}
+
+/* COLLEGE */
+.college-sec{background:linear-gradient(180deg,#0c1830,var(--dark))}
+.college-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.cperk{background:var(--panel);border:1px solid var(--panel-br);border-radius:16px;padding:22px}
+.cperk-i{font-size:26px;margin-bottom:12px}
+.cperk-t{font-size:15px;font-weight:500;margin-bottom:6px}
+.cperk-d{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ADMIN */
+.admin{padding:30px;max-width:1300px;margin:0 auto}
+.adm-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;gap:14px}
+.adm-h-title{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:600}
+.adm-h-sub{font-size:13px;color:var(--muted);margin-top:3px}
+.adm-controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.adm-btn{padding:9px 16px;border-radius:9px;font-size:12px;border:1px solid var(--panel-br);background:var(--panel);color:var(--txt);cursor:pointer;transition:all .2s}
+.adm-btn:hover{border-color:var(--gold)}
+.adm-btn.live{background:var(--green);border-color:var(--green)}
+.adm-btn.live.off{background:var(--panel);border-color:var(--panel-br)}
+.adm-tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+.atab{padding:8px 16px;border-radius:9px;font-size:13px;border:1px solid var(--panel-br);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.atab.active{background:var(--gold);color:var(--dark);border-color:var(--gold)}
+.apanel{display:none}.apanel.active{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:22px}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel);border:1px solid var(--panel-br);border-radius:16px;padding:18px;position:relative;overflow:hidden}
+.kpi-top{display:flex;justify-content:space-between;margin-bottom:12px}.kpi-icon{font-size:18px}
+.kpi-trend{font-size:11px;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:100px;background:rgba(74,222,128,.15);color:#4ade80}
+.kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:'DM Mono',monospace;margin-bottom:5px}
+.kpi-val{font-size:26px;font-weight:600;font-family:'DM Mono',monospace}
+.kpi-spark{position:absolute;bottom:0;left:0;right:0;height:28px;opacity:.4}
+.adm-row{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.adm-row{grid-template-columns:1fr}}
+.adm-card{background:var(--panel);border:1px solid var(--panel-br);border-radius:16px;padding:20px}
+.ac-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.ac-sub{font-size:11px;color:var(--muted);margin-bottom:16px;font-family:'DM Mono',monospace}
+.chart-wrap{position:relative;width:100%;height:230px}.chart-wrap.sm{height:190px}
+.city-list{display:flex;flex-direction:column;gap:12px}
+.city-row{display:flex;flex-direction:column;gap:5px}
+.city-meta{display:flex;justify-content:space-between;align-items:center}
+.city-name{font-size:13px;display:flex;align-items:center;gap:7px}.city-flag{font-size:14px}
+.city-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--gold)}
+.city-bar{height:7px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
+.city-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--disney2),var(--gold));transition:width .6s}
+.live-feed{display:flex;flex-direction:column;max-height:280px;overflow-y:auto}
+.feed-item{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px;animation:slideIn .4s}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.feed-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.feed-txt{flex:1;color:rgba(255,255,255,.8)}.feed-amt{font-family:'DM Mono',monospace;color:#4ade80;font-size:12px}
+.mgmt-tables{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:7px}
+.mt{aspect-ratio:1;border-radius:8px;border:1.5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .15s}
+.mt.av{border-color:var(--green);color:#4ade80;background:rgba(0,112,74,.08)}
+.mt.oc{border-color:var(--red);color:var(--red);background:rgba(248,113,113,.08)}
+.mt.vip{border-color:var(--disney2);color:var(--disney-glow);background:rgba(59,111,212,.08)}
+.mt:hover{transform:scale(1.05)}
+.report-table{width:100%;border-collapse:collapse;font-size:13px}
+.report-table th{text-align:left;padding:9px 8px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-family:'DM Mono',monospace;border-bottom:1px solid var(--panel-br)}
+.report-table td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.05)}
+.tag{padding:2px 9px;border-radius:100px;font-size:11px;font-family:'DM Mono',monospace}
+.tag-paid{background:rgba(74,222,128,.15);color:#4ade80}.tag-vip{background:rgba(59,111,212,.15);color:var(--disney-glow)}
+
+/* CALCULATOR */
+.calc-grid{display:grid;grid-template-columns:340px 1fr;gap:20px}
+@media(max-width:800px){.calc-grid{grid-template-columns:1fr}}
+.calc-row{margin-bottom:18px}
+.calc-row label{display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,.8);margin-bottom:8px}
+.calc-row label b{font-family:'DM Mono',monospace;color:var(--gold)}
+.calc-out{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
+.co{background:var(--panel);border:1px solid var(--panel-br);border-radius:14px;padding:18px}
+.co-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:'DM Mono',monospace;margin-bottom:6px}
+.co-v{font-size:26px;font-weight:600;font-family:'DM Mono',monospace;color:var(--gold)}
+.co-n{font-size:11px;color:var(--muted);margin-top:3px}
+.compare-box{background:linear-gradient(135deg,rgba(26,58,143,.3),rgba(124,77,255,.2));border:1px solid rgba(59,111,212,.3);border-radius:14px;padding:20px 24px;margin-top:6px}
+.cb-l{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.cb-t{font-size:15px;line-height:1.6;color:rgba(255,255,255,.9)}.cb-t strong{color:var(--gold)}
+
+/* MARKET DATA */
+.data-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.dt{padding:7px 15px;border-radius:8px;font-size:12px;border:1px solid var(--panel-br);background:transparent;color:var(--muted);cursor:pointer}
+.dt.active{background:var(--disney2);color:#fff;border-color:var(--disney2)}
+.dpanel{display:none}.dpanel.active{display:block}
+.stat-card{background:var(--panel);border:1px solid var(--panel-br);border-radius:14px;padding:20px;margin-bottom:14px}
+.sc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.sc-stat{font-family:'Fredoka',sans-serif;font-size:32px;font-weight:600;color:var(--gold)}
+.sc-name{font-size:14px;font-weight:500}
+.sc-desc{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:8px}
+.sc-ref{font-size:11px;font-family:'DM Mono',monospace}
+.sc-ref a{color:var(--disney-glow);text-decoration:none}.sc-ref a:hover{text-decoration:underline}
+.gen-bars{display:flex;flex-direction:column;gap:13px}
+.gr{display:flex;flex-direction:column;gap:5px}
+.gr-m{display:flex;justify-content:space-between;align-items:flex-end}
+.gr-n{font-size:13px;color:rgba(255,255,255,.8)}.gr-s{font-size:10px;color:var(--muted)}
+.gr-p{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
+.bt{height:7px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}.bf{height:100%;border-radius:4px;transition:width .5s}
+.sim-slider{background:var(--panel);border:1px solid var(--panel-br);border-radius:14px;padding:18px;margin-bottom:16px}
+.ss-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.ss-l{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1px}
+.ss-v{font-size:32px;font-weight:600;color:var(--gold);font-family:'DM Mono',monospace}
+
+footer{background:#060d1c;padding:46px 30px 34px;text-align:center;border-top:1px solid rgba(255,255,255,.06)}
+.f-links{display:flex;gap:18px;justify-content:center;margin-bottom:18px;flex-wrap:wrap}
+.f-links a{font-size:12px;color:var(--muted);text-decoration:none}.f-links a:hover{color:#fff}
+.f-tag{font-size:12px;color:var(--muted);margin-bottom:6px}
+.f-copy{font-size:11px;color:rgba(255,255,255,.2);font-family:'DM Mono',monospace;letter-spacing:1px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:13px 19px;border-radius:11px;font-size:14px;font-weight:500;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;max-width:280px}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><span class="ears"><span></span></span>Disney Café <span style="color:var(--muted);font-weight:400;font-size:13px">× Starbucks</span></div>
+  <div class="view-switch">
+    <button class="vs-btn active" id="sw-customer" onclick="switchView('customer')">Café Experience</button>
+    <button class="vs-btn" id="sw-admin" onclick="switchView('admin')">Disney Ops Console</button>
+  </div>
+  <div class="nav-links">
+    <a href="https://disney.com" target="_blank" rel="noopener" class="nav-ext">Disney ↗</a>
+    <a href="https://www.starbucks.com" target="_blank" rel="noopener" class="nav-ext">Starbucks ↗</a>
+    <span class="nav-status"><span class="pulse"></span><span class="mono" id="liveClock">LIVE</span></span>
+  </div>
+</nav>
+
+<!-- ============ CUSTOMER VIEW ============ -->
+<div class="view active" id="view-customer">
+  <div class="hero">
+    <div class="hero-bg" id="heroBg" style="background-image:url('https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=1600&q=80')"></div>
+    <div class="hero-ov"></div>
+    <svg class="holo-mascot" viewBox="0 0 300 380" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="hg" cx="50%" cy="38%" r="62%">
+        <stop offset="0%" stop-color="#b388ff" stop-opacity="0.55"/>
+        <stop offset="55%" stop-color="#5b8def" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#5b8def" stop-opacity="0"/>
+      </radialGradient></defs>
+      <circle cx="72" cy="78" r="54" fill="url(#hg)" stroke="#b388ff" stroke-width="1.5" stroke-opacity="0.55"/>
+      <circle cx="228" cy="78" r="54" fill="url(#hg)" stroke="#b388ff" stroke-width="1.5" stroke-opacity="0.55"/>
+      <ellipse cx="150" cy="178" rx="92" ry="98" fill="url(#hg)" stroke="#b388ff" stroke-width="1.5" stroke-opacity="0.55"/>
+      <ellipse cx="150" cy="320" rx="78" ry="13" fill="#5b8def" opacity="0.22"/>
+    </svg>
+    <div class="hero-c">
+      <div class="eyebrow">✦ The Magic You Can Visit Every Week</div>
+      <h1>The <span class="gold">Disney</span> Café<br>Powered by <span class="mag">Starbucks</span></h1>
+      <p class="hero-sub">A daily dose of Disney magic — holographic characters, collectible merch, immersive zones, and rewards. Not once a year. Every week.</p>
+      <div class="hero-btns">
+        <a class="btn btn-p" href="#book">Book Your Table</a>
+        <a class="btn btn-o" href="#shop">Shop Limited Editions</a>
+      </div>
+    </div>
+    <div class="img-swap">
+      <label>🖼 Change hero image<input type="file" accept="image/*" onchange="swapHero(this)"></label>
+    </div>
+  </div>
+
+  <!-- FREQUENCY BAND -->
+  <div class="freq-band">
+    <div class="freq-inner">
+      <div class="freq-box"><div class="freq-num">1–2×</div><div class="freq-cap">Disney Park visits per YEAR</div></div>
+      <div class="freq-vs">→ becomes →</div>
+      <div class="freq-box"><div class="freq-num">2–5×</div><div class="freq-cap">Disney Café visits per WEEK</div></div>
+    </div>
+    <div style="text-align:center;margin-top:20px;font-size:14px;color:rgba(255,255,255,.85);max-width:680px;margin-left:auto;margin-right:auto;line-height:1.55">
+      Disney monetizes magic <strong>occasionally</strong>. The Café monetizes it <strong>habitually</strong> — turning a once-a-year pilgrimage into a weekly ritual, multiplying lifetime value by <strong>50–100×</strong>.
+    </div>
+  </div>
+
+  <!-- SHOP -->
+  <section class="shop-sec" id="shop">
+    <div class="inner">
+      <div class="lbl">🛍 The Mouse Shop</div>
+      <h2 class="title">Collectibles & Limited Editions</h2>
+      <p class="sub">High-margin Disney merchandise — the real licensing engine. Limited drops create urgency and bring fans back weekly.</p>
+      <div class="grid-auto" id="shopGrid"></div>
+    </div>
+  </section>
+
+  <!-- PHOTO BOOTH -->
+  <section class="cam-sec" id="camera">
+    <div class="inner">
+      <div class="lbl">📸 Magic Mirror Photo Booth</div>
+      <h2 class="title">Snap With the Hologram</h2>
+      <p class="sub">A live AR photo booth — guests take a magical mouse-ears selfie and share it. Free marketing through every Gen Z post.</p>
+      <div class="cam-wrap">
+        <div class="cam-stage">
+          <video id="camVideo" autoplay playsinline></video>
+          <canvas id="camCanvas"></canvas>
+          <div class="cam-overlay">
+            <svg width="120" height="70" viewBox="0 0 120 70"><circle cx="28" cy="22" r="20" fill="none" stroke="#E8C66B" stroke-width="3"/><circle cx="92" cy="22" r="20" fill="none" stroke="#E8C66B" stroke-width="3"/></svg>
+          </div>
+          <div class="cam-frame-watermark"><span class="ears" style="color:#E8C66B;width:18px;height:14px"><span></span></span>Disney Café</div>
+          <div class="cam-placeholder" id="camPlaceholder">
+            <div style="font-size:42px">📷</div>
+            <div>Tap "Start Camera" to try the Magic Mirror.<br><span style="font-size:11px">Works on the live link (needs camera permission)</span></div>
+          </div>
+        </div>
+        <div class="cam-controls">
+          <button class="btn btn-p" onclick="startCamera()">▶ Start Camera</button>
+          <button class="btn btn-o" onclick="snapPhoto()">📸 Snap & Download</button>
+          <div class="card" style="padding:16px">
+            <div style="font-size:13px;font-weight:500;margin-bottom:6px">Why it matters for Disney</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.55">Every shared photo is a free Disney brand impression. At 15× Gen Z amplification, one booth becomes thousands of organic ads per day.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OFFERS -->
+  <section id="offers">
+    <div class="inner">
+      <div class="lbl">📍 Offers Near You</div>
+      <h2 class="title">Magic Within Your Radius</h2>
+      <p class="sub">Live geolocation filtering — exactly how the production app surfaces nearby café deals.</p>
+      <div class="radius-bar">
+        <span class="mono">Radius:</span>
+        <input type="range" id="radius" min="1" max="25" value="5" step="0.5">
+        <span class="mono" id="radiusVal" style="color:var(--gold);min-width:54px">5.0 mi</span>
+        <span class="mono" id="offerCount" style="color:var(--gold)">— found</span>
+      </div>
+      <div class="grid-auto" id="offersGrid"></div>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section style="background:#0c1830" id="book">
+    <div class="inner">
+      <div class="lbl">🪑 Reserve Your Spot</div>
+      <h2 class="title">Book a Table</h2>
+      <p class="sub">Live floor plan — every booking flows straight into the Disney Ops Console in real time.</p>
+      <div class="book-layout">
+        <div class="card">
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px">Café Floor Plan — Anaheim, CA</div>
+          <div class="mono" id="fpStatus" style="font-size:11px;color:var(--muted);margin-bottom:16px">LIVE · — OF 30 TABLES AVAILABLE</div>
+          <div class="legend">
+            <div class="lg"><div class="lg-d" style="background:var(--green)"></div>Available</div>
+            <div class="lg"><div class="lg-d" style="background:var(--disney2)"></div>VIP Hologram Suite</div>
+            <div class="lg"><div class="lg-d" style="background:rgba(255,255,255,.15)"></div>Occupied</div>
+            <div class="lg"><div class="lg-d" style="background:var(--gold)"></div>Selected</div>
+          </div>
+          <div class="tables" id="tablesGrid"></div>
+        </div>
+        <div class="card" style="position:sticky;top:88px">
+          <div style="font-size:17px;font-weight:500;margin-bottom:3px">Reserve Your Table</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Confirm in 30 seconds</div>
+          <div class="sel-info" id="selInfo">No table selected — tap a green or blue table.</div>
+          <div class="fg"><label class="fl">Your name</label><input class="fi" id="bName" placeholder="e.g. Samir"></div>
+          <div class="fg"><label class="fl">Date & time</label><input class="fi" type="datetime-local" id="bTime"></div>
+          <div class="fg"><label class="fl">Party size</label><select class="fi" id="bParty"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5+</option></select></div>
+          <div class="fg"><label class="fl">Student ID (optional, +perks)</label><input class="fi" id="bRewards" placeholder="Unlock student rate"></div>
+          <button class="btn-book" id="bookBtn" onclick="confirmBooking()" disabled>Select a table to continue</button>
+          <div class="succ" id="succ"><div class="succ-i">✅</div><div class="succ-t">Booking Confirmed!</div><div class="succ-s" id="succDetail"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME ROOMS -->
+  <section id="game">
+    <div class="inner">
+      <div class="lbl">🎮 Experience Zones</div>
+      <h2 class="title">Book an Immersive Zone</h2>
+      <p class="sub">Each zone is built around one generation's loyalty driver — and a reason to come back this week.</p>
+      <div class="grid-auto" id="roomsGrid"></div>
+    </div>
+  </section>
+
+  <!-- COLLEGE -->
+  <section class="college-sec" id="college">
+    <div class="inner">
+      <div class="lbl">🎓 Disney Café Campus</div>
+      <h2 class="title">Built for College Students</h2>
+      <p class="sub">Students visit a café 4–7× a week. The frequency engine. We give them every reason to make Disney Café their daily ritual.</p>
+      <div class="college-grid" id="collegeGrid"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="f-links">
+      <a href="https://disney.com" target="_blank" rel="noopener">Disney.com ↗</a>
+      <a href="https://disneyparks.disney.go.com" target="_blank" rel="noopener">Disney Parks ↗</a>
+      <a href="https://www.starbucks.com" target="_blank" rel="noopener">Starbucks ↗</a>
+      <a href="https://www.starbucks.com/rewards" target="_blank" rel="noopener">Starbucks Rewards ↗</a>
+    </div>
+    <div class="f-tag">A Disney-led phygital café concept · Operated with Starbucks · US Market</div>
+    <div class="f-copy">PITCH CONCEPT · NOT AFFILIATED · STYLIZED MASCOT FOR DEMO ONLY · 2026</div>
+  </footer>
+</div>
+
+<!-- ============ ADMIN VIEW ============ -->
+<div class="view" id="view-admin">
+  <div class="admin">
+    <div class="adm-head">
+      <div>
+        <div class="adm-h-title">Disney Café Ops Console</div>
+        <div class="adm-h-sub">Live sales · traffic · reservations · market intelligence</div>
+      </div>
+      <div class="adm-controls">
+        <button class="adm-btn live" id="liveBtn" onclick="toggleLive()">⏸ Pause Live Sales</button>
+        <button class="adm-btn" onclick="exportReport()">⬇ Export Report (CSV)</button>
+        <button class="adm-btn" onclick="resetData()">↻ Reset Demo</button>
+      </div>
+    </div>
+
+    <div class="adm-tabs">
+      <button class="atab active" onclick="adminTab('overview',this)">📊 Overview</button>
+      <button class="atab" onclick="adminTab('calc',this)">🧮 Growth Calculator</button>
+      <button class="atab" onclick="adminTab('us',this)">🇺🇸 US Market Data</button>
+      <button class="atab" onclick="adminTab('tables',this)">🪑 Tables & Ledger</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="apanel active" id="ap-overview">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-top"><span class="kpi-icon">💰</span><span class="kpi-trend">+12.4%</span></div><div class="kpi-label">Today's Revenue</div><div class="kpi-val" id="kpiRevenue">$0</div><canvas class="kpi-spark" id="spark1"></canvas></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-icon">🛒</span><span class="kpi-trend">+8.1%</span></div><div class="kpi-label">Transactions</div><div class="kpi-val" id="kpiTxns">0</div><canvas class="kpi-spark" id="spark2"></canvas></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-icon">🪑</span><span class="kpi-trend">live</span></div><div class="kpi-label">Table Occupancy</div><div class="kpi-val" id="kpiOcc">0%</div><canvas class="kpi-spark" id="spark3"></canvas></div>
+        <div class="kpi"><div class="kpi-top"><span class="kpi-icon">⭐</span><span class="kpi-trend">+15.2%</span></div><div class="kpi-label">New Rewards Members</div><div class="kpi-val" id="kpiMembers">0</div><canvas class="kpi-spark" id="spark4"></canvas></div>
+      </div>
+      <div class="adm-row">
+        <div class="adm-card"><div class="ac-title">Sales Trend — Last 24 Hours</div><div class="ac-sub">UPDATES LIVE · ALL US CAFÉ LOCATIONS</div><div class="chart-wrap"><canvas id="salesChart"></canvas></div></div>
+        <div class="adm-card"><div class="ac-title">Live Sales Feed</div><div class="ac-sub">REAL-TIME TRANSACTIONS</div><div class="live-feed" id="liveFeed"></div></div>
+      </div>
+      <div class="adm-row">
+        <div class="adm-card"><div class="ac-title">City Traffic — Top US Markets</div><div class="ac-sub">FOOTFALL INDEX · UPDATED EVERY 3S</div><div class="city-list" id="cityList"></div></div>
+        <div class="adm-card"><div class="ac-title">Revenue by Generation (US)</div><div class="ac-sub">CUSTOMER MIX</div><div class="chart-wrap sm"><canvas id="genChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- CALCULATOR -->
+    <div class="apanel" id="ap-calc">
+      <div class="calc-grid">
+        <div class="adm-card">
+          <div class="ac-title">Frequency Revenue Calculator</div>
+          <div class="ac-sub">MODEL THE WEEKLY-RITUAL ADVANTAGE</div>
+          <div class="calc-row"><label>Visits per week <b id="cl1">3</b></label><input type="range" id="ci-visits" min="1" max="7" value="3" step="0.5" style="width:100%"></div>
+          <div class="calc-row"><label>Avg spend per visit <b id="cl2">$12</b></label><input type="range" id="ci-spend" min="5" max="40" value="12" step="1" style="width:100%"></div>
+          <div class="calc-row"><label>Active customers <b id="cl3">50,000</b></label><input type="range" id="ci-cust" min="1000" max="500000" value="50000" step="1000" style="width:100%"></div>
+          <div class="calc-row"><label>Merch attach rate <b id="cl4">20%</b></label><input type="range" id="ci-merch" min="0" max="60" value="20" step="5" style="width:100%"></div>
+        </div>
+        <div>
+          <div class="calc-out">
+            <div class="co"><div class="co-l">Weekly revenue</div><div class="co-v" id="co-week">$0</div><div class="co-n">across all customers</div></div>
+            <div class="co"><div class="co-l">Annual revenue</div><div class="co-v" id="co-year">$0</div><div class="co-n">recurring</div></div>
+            <div class="co"><div class="co-l">Annual value / customer</div><div class="co-v" id="co-ltv">$0</div><div class="co-n">vs ~$120 park guest/yr</div></div>
+            <div class="co"><div class="co-l">Merch revenue / yr</div><div class="co-v" id="co-merch">$0</div><div class="co-n">high-margin licensing</div></div>
+          </div>
+          <div class="adm-card"><div class="ac-title">Annual revenue as visit frequency grows</div><div class="ac-sub">EACH LINE = SPEND PER VISIT</div><div class="chart-wrap sm"><canvas id="calcChart"></canvas></div></div>
+          <div class="compare-box">
+            <div class="cb-l">⚡ The Disney Frequency Advantage</div>
+            <div class="cb-t" id="calcInsight"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- US MARKET DATA -->
+    <div class="apanel" id="ap-us">
+      <div class="data-tabs">
+        <button class="dt active" onclick="dataTab('young',this)">Gen Z & Gen Alpha (New)</button>
+        <button class="dt" onclick="dataTab('old',this)">Millennials & Gen X (Established)</button>
+        <button class="dt" onclick="dataTab('behavior',this)">Behavior & Nostalgia</button>
+      </div>
+      <div class="dpanel active" id="dp-young">
+        <div class="stat-card"><div class="sc-h"><span class="sc-stat">~30%</span><span class="sc-name">Gen Z share of US Starbucks base (ages 12–27)</span></div><div class="sc-desc">The fastest-growing cohort. 70% of US Gen Z actively plan coffeehouse visits for social experience and physical connection — not just quick pickups.</div><div class="sc-ref">Sources: <a href="https://www.nrn.com/quick-service/starbucks-bets-on-gen-z-to-bring-back-coffeehouse-culture" target="_blank" rel="noopener">Morning Consult / NRN ↗</a> · <a href="https://businessmodelcanvastemplate.com/blogs/target-market/starbucks-target-market" target="_blank" rel="noopener">US demographic metrics ↗</a></div></div>
+        <div class="stat-card"><div class="sc-h"><span class="sc-stat">10%</span><span class="sc-name">Gen Alpha (11–14) ranking specialty coffee a top preference</span></div><div class="sc-desc">Older Gen Alpha enters the commercial loop earlier than prior generations, using customization to express early independence and lifestyle identity.</div><div class="sc-ref">Source: <a href="https://www.numerator.com/resources/blog/generation-alpha-future-consumers/" target="_blank" rel="noopener">Numerator: Gen Alpha Behavior ↗</a></div></div>
+      </div>
+      <div class="dpanel" id="dp-old">
+        <div class="stat-card"><div class="sc-h"><span class="sc-stat">~45%</span><span class="sc-name">Millennials & Gen X share of US revenue (ages 25–44)</span></div><div class="sc-desc">The financial backbone — urban/suburban professionals, household income $80k+, heavy mobile-order reliance for daily rituals.</div><div class="sc-ref">Source: <a href="https://businessmodelcanvastemplate.com/blogs/target-market/starbucks-target-market" target="_blank" rel="noopener">Starbucks Core Demographics ↗</a></div></div>
+        <div class="stat-card"><div class="sc-h"><span class="sc-stat">16,900+</span><span class="sc-name">US Starbucks locations (2025/2026)</span></div><div class="sc-desc">A nationwide footprint and existing loyalty infrastructure the Disney Café concept can plug straight into.</div><div class="sc-ref">Source: <a href="https://matrixbcg.com/blogs/target-market/starbucks" target="_blank" rel="noopener">Matrix BCG Analysis ↗</a></div></div>
+      </div>
+      <div class="dpanel" id="dp-behavior">
+        <div class="stat-card"><div class="sc-h"><span class="sc-stat">75%</span><span class="sc-name">of US beverage sales are cold, customized drinks</span></div><div class="sc-desc">A complete behavior shift — validates a high-margin cold/wellness menu over hot-espresso infrastructure, lowering labor and complexity.</div><div class="sc-ref">Source: <a href="https://matrixbcg.com/blogs/target-market/starbucks" target="_blank" rel="noopener">Matrix BCG ↗</a></div></div>
+        <div class="stat-card"><div class="sc-h"><span class="sc-stat">60%</span><span class="sc-name">of US tender from 34M+ Rewards members</span></div><div class="sc-desc">The digital loyalty ecosystem (Deep Brew AI) is the cash engine — exactly what the Disney Café frequency model feeds.</div><div class="sc-ref">Source: <a href="https://matrixbcg.com/blogs/target-market/starbucks" target="_blank" rel="noopener">Matrix BCG ↗</a></div></div>
+        <div class="stat-card"><div class="sc-h"><span class="sc-stat">50%</span><span class="sc-name">of Gen Z feel strong nostalgia (most of any generation)</span></div><div class="sc-desc">Gen Z is the most nostalgic generation (Millennials 47%) — driving the success of Disney's classic-IP revivals. The Café turns nostalgia into a weekly habit.</div><div class="sc-ref">Source: <a href="https://www.gwi.com/blog/nostalgia-trend" target="_blank" rel="noopener">GWI Nostalgia Research ↗</a></div></div>
+      </div>
+    </div>
+
+    <!-- TABLES & LEDGER -->
+    <div class="apanel" id="ap-tables">
+      <div class="adm-row">
+        <div class="adm-card"><div class="ac-title">Table Management — Anaheim, CA</div><div class="ac-sub">CLICK TO TOGGLE · GREEN=FREE RED=BUSY BLUE=VIP</div><div class="mgmt-tables" id="mgmtTables"></div></div>
+        <div class="adm-card"><div class="ac-title">Loyalty Growth Projection</div><div class="ac-sub">DRAG TO MODEL</div>
+          <div class="sim-slider"><div class="ss-top"><span class="ss-l">New customers</span><span class="ss-v" id="simVal">500K</span></div><input type="range" id="simSlider" min="100000" max="5000000" step="100000" value="500000" style="width:100%"></div>
+          <div class="gen-bars">
+            <div class="gr"><div class="gr-m"><div><div class="gr-n">Gen Z</div><div class="gr-s">Experience + social</div></div><div class="gr-p" style="color:var(--purple)" id="gzP">11%</div></div><div class="bt"><div class="bf" id="gzB" style="width:11%;background:var(--purple)"></div></div></div>
+            <div class="gr"><div class="gr-m"><div><div class="gr-n">Gen X</div><div class="gr-s">Rewards + value</div></div><div class="gr-p" style="color:var(--gold)" id="gxP">7%</div></div><div class="bt"><div class="bf" id="gxB" style="width:7%;background:var(--gold)"></div></div></div>
+            <div class="gr"><div class="gr-m"><div><div class="gr-n">Gen Alpha</div><div class="gr-s">Identity + peers</div></div><div class="gr-p" style="color:var(--teal)" id="gaP">5%</div></div><div class="bt"><div class="bf" id="gaB" style="width:5%;background:var(--teal)"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="adm-card"><div class="ac-title">Recent Reservations & Sales</div><div class="ac-sub">LIVE LEDGER · INCLUDES CUSTOMER-SIDE BOOKINGS</div>
+        <table class="report-table"><thead><tr><th>Time</th><th>Customer</th><th>Type</th><th>City</th><th>Amount</th><th>Status</th></tr></thead><tbody id="ledger"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ====================================================================
+   LAYER 3 — DATA PIPELINE ("backend").  Swap localStorage for fetch()
+   to your API at the >>> marks; Layers 1 & 2 stay unchanged.
+   ==================================================================== */
+const DB={
+  KEY:'dsx_disney_v1',_data:null,
+  _read(){if(this._data)return this._data;try{this._data=JSON.parse(localStorage.getItem(this.KEY));}catch(e){this._data=null;}if(!this._data)this._data=this._seed();return this._data;},
+  _write(){/* >>> POST this._data to API */try{localStorage.setItem(this.KEY,JSON.stringify(this._data));}catch(e){}},
+  _seed(){const tables=[];const vip=[4,9,15,22,28],occ=[2,7,12,16,20,25,30];for(let i=1;i<=30;i++){let s='av';if(vip.includes(i))s='vip';if(occ.includes(i))s='oc';tables.push({id:i,status:s,cap:[2,4,2,4,6][i%5]});}return{tables,bookings:[],sales:this._seedSales(),cities:[{name:'New York, NY',flag:'🗽',idx:94},{name:'Los Angeles, CA',flag:'🌴',idx:88},{name:'Orlando, FL',flag:'🏰',idx:86},{name:'Chicago, IL',flag:'🌬️',idx:71},{name:'Seattle, WA',flag:'☕',idx:67},{name:'Austin, TX',flag:'🎸',idx:59}],members:412};},
+  _seedSales(){const arr=[];for(let i=23;i>=0;i--)arr.push({hour:i,amount:Math.round(800+Math.random()*2200+(i<12?i*120:(24-i)*90))});return{hourly:arr,total:arr.reduce((a,b)=>a+b.amount,0),txns:Math.round(arr.reduce((a,b)=>a+b.amount,0)/9)};},
+  tables(){return this._read().tables;},cities(){return this._read().cities;},sales(){return this._read().sales;},bookings(){return this._read().bookings;},members(){return this._read().members;},
+  setTableStatus(id,s){const t=this._read().tables.find(x=>x.id===id);if(t){t.status=s;this._write();}},
+  addBooking(b){/* >>> POST /bookings */const d=this._read();d.bookings.unshift(b);const t=d.tables.find(x=>x.id===b.tableId);if(t)t.status='oc';d.sales.total+=b.amount;d.sales.txns+=1;d.sales.hourly[d.sales.hourly.length-1].amount+=b.amount;if(b.rewards)d.members+=1;this._write();return b;},
+  recordSale(a){const d=this._read();d.sales.total+=a;d.sales.txns+=1;d.sales.hourly[d.sales.hourly.length-1].amount+=a;this._write();},
+  occupancy(){const t=this._read().tables;return Math.round(t.filter(x=>x.status==='oc').length/t.length*100);},
+  reset(){localStorage.removeItem(this.KEY);this._data=null;this._read();}
+};
+
+/* ===== LAYER 2 — APP LOGIC ===== */
+let selectedTable=null,currentView='customer',liveOn=true,liveTimer=null,cityTimer=null;
+function switchView(v){currentView=v;document.getElementById('view-customer').classList.toggle('active',v==='customer');document.getElementById('view-admin').classList.toggle('active',v==='admin');document.getElementById('sw-customer').classList.toggle('active',v==='customer');document.getElementById('sw-admin').classList.toggle('active',v==='admin');window.scrollTo(0,0);if(v==='admin')renderAdmin();}
+function adminTab(t,el){document.querySelectorAll('.atab').forEach(b=>b.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));document.getElementById('ap-'+t).classList.add('active');if(t==='calc')updateCalc();if(t==='overview')renderAdmin();}
+function dataTab(t,el){document.querySelectorAll('.dt').forEach(b=>b.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.dpanel').forEach(p=>p.classList.remove('active'));document.getElementById('dp-'+t).classList.add('active');}
+
+/* hero image swap */
+function swapHero(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{document.getElementById('heroBg').style.backgroundImage="url('"+e.target.result+"')";showToast('🖼 Hero image updated');};r.readAsDataURL(f);}
+
+/* SHOP */
+const SHOP=[
+ {emoji:'☕',badge:'Bestseller',le:false,t:'Mouse-Ears Tumbler',d:'Collectible insulated tumbler shaped with iconic ears.',price:'$28',stock:62},
+ {emoji:'🧋',badge:'New',le:true,t:'Limited: Galaxy Cold Foam Kit',d:'Make the viral color-changing café drink at home. 500 made.',price:'$34',stock:18},
+ {emoji:'🎁',badge:'Gift',le:false,t:'Magic Mystery Box',d:'Surprise merch + drink voucher + exclusive pin.',price:'$45',stock:40},
+ {emoji:'📿',badge:'Collector',le:true,t:'Enamel Pin Drop — Series 1',d:'Weekly limited pin. Fans return every week to complete the set.',price:'$12',stock:7},
+ {emoji:'👕',badge:'Apparel',le:false,t:'Café Crew Hoodie',d:'Premium hoodie with embroidered café crest.',price:'$58',stock:33},
+ {emoji:'🥤',badge:'Limited',le:true,t:'Holiday Reserve Cup',d:'Seasonal collector cup — gone when it is gone.',price:'$22',stock:11}
+];
+function renderShop(){const g=document.getElementById('shopGrid');g.innerHTML='';SHOP.forEach((p,i)=>{g.innerHTML+=`<div class="product"><div class="product-img"><span class="product-emoji">${p.emoji}</span><span class="prod-badge">${p.badge}</span>${p.le?'<span class="prod-le">LIMITED</span>':''}</div><div class="product-b"><div class="prod-t">${p.t}</div><div class="prod-d">${p.d}</div>${p.le?`<div class="stock-bar"><div class="stock-fill" style="width:${p.stock}%"></div></div><div class="stock-txt">Only ${Math.ceil(p.stock/4)} left in stock</div>`:''}<div class="prod-foot" style="margin-top:12px"><span class="prod-price">${p.price}</span><button class="btn-sm" onclick="buy(this,'${p.t}',${parseInt(p.price.slice(1))})">Add to Bag</button></div></div></div>`;});}
+function buy(btn,name,price){btn.textContent='✓ Added';btn.style.background='var(--gold)';btn.style.color='var(--dark)';btn.disabled=true;DB.recordSale(price);showToast('🛍 Added: '+name);}
+
+/* OFFERS */
+const OFFERS=[
+ {d:0.8,badge:'⭐ Today',img:'1461023058943-07fcbe16d735',t:'Enchanted Matcha',desc:'Disney-themed matcha with edible gold shimmer.',was:'8.50',now:'5.95'},
+ {d:2.1,badge:'🏰 Special',img:'1572442388796-11668a67e53d',t:'Castle Cold Brew Bundle',desc:'Cold brew + collector cup + 150 Stars + hologram show.',was:'22.00',now:'14.50'},
+ {d:3.4,badge:'🎭 Gen Z',img:'1509042239860-f550ce710b93',t:'Custom × Hologram Drop',desc:'Build your drink + personal hologram. Share for Stars.',was:'12.00',now:'7.99'},
+ {d:4.7,badge:'👨‍👩‍👧 Family',img:'1495474472287-4d71bcdd2085',t:'Family Magic Package',desc:'4 drinks + kids cups + full table hologram show.',was:'48.00',now:'29.99'},
+ {d:7.2,badge:'🌟 VIP',img:'1447933601403-0c6688de566e',t:'VIP Tasting',desc:'5 exclusive drinks + reserved suite + 500 Stars.',was:'75.00',now:'39.00'},
+ {d:12.5,badge:'📦 Take Home',img:'1442512595331-e89e73853f31',t:'Merch + Beans Bundle',desc:'Exclusive beans + limited mug. Ship or pickup.',was:'55.00',now:'34.95'}
+];
+function renderOffers(){const r=parseFloat(document.getElementById('radius').value);const g=document.getElementById('offersGrid');g.innerHTML='';let n=0;OFFERS.forEach(o=>{if(o.d>r)return;n++;g.innerHTML+=`<div class="offer"><div class="offer-img" style="background-image:url('https://images.unsplash.com/photo-${o.img}?w=600&q=80')"><span class="o-badge">${o.badge}</span><span class="o-dist mono">${o.d} mi</span></div><div class="offer-b"><div class="o-title">${o.t}</div><div class="o-desc">${o.desc}</div><div class="o-foot"><div class="o-price"><s>$${o.was}</s>$${o.now}</div><button class="btn-sm" onclick="claimOffer(this,'${o.t}',${o.now})">Claim</button></div></div></div>`;});document.getElementById('offerCount').textContent=n+' offer'+(n!==1?'s':'')+' found';}
+function claimOffer(btn,name,price){btn.textContent='✓ Claimed';btn.style.background='var(--gold)';btn.style.color='var(--dark)';btn.disabled=true;DB.recordSale(Math.round(price));showToast('🌟 Claimed: '+name);}
+
+/* TABLES */
+function renderTables(){const g=document.getElementById('tablesGrid');g.innerHTML='';const tabs=DB.tables();tabs.forEach(t=>{const b=document.createElement('button');b.className='tbl '+t.status;b.id='ct-'+t.id;b.innerHTML=`<span class="tn">${t.id}</span><span class="tc">${t.cap} seats</span>`;if(t.status==='av'||t.status==='vip')b.onclick=()=>selectTable(t);g.appendChild(b);});const av=tabs.filter(t=>t.status!=='oc').length;document.getElementById('fpStatus').textContent='LIVE · '+av+' OF 30 TABLES AVAILABLE';}
+function selectTable(t){if(selectedTable){const p=document.getElementById('ct-'+selectedTable.id);if(p)p.className='tbl '+selectedTable.status;}selectedTable=t;document.getElementById('ct-'+t.id).className='tbl sel';document.getElementById('selInfo').innerHTML=`<strong>Table ${t.id}</strong> · ${t.cap} seats · ${t.status==='vip'?'🌟 VIP Hologram Suite (+200 Stars)':'Standard'}`;const b=document.getElementById('bookBtn');b.disabled=false;b.textContent='Confirm Booking';}
+function confirmBooking(){const name=document.getElementById('bName').value.trim();const time=document.getElementById('bTime').value;if(!name)return showToast('Please enter your name');if(!time)return showToast('Please pick a date & time');if(!selectedTable)return showToast('Please select a table');const isVip=selectedTable.status==='vip';const amount=isVip?42:18;DB.addBooking({tableId:selectedTable.id,name,time,party:document.getElementById('bParty').value,rewards:document.getElementById('bRewards').value.trim(),vip:isVip,amount,city:'Anaheim, CA',ts:Date.now()});document.getElementById('ct-'+selectedTable.id).className='tbl oc';document.getElementById('ct-'+selectedTable.id).onclick=null;document.getElementById('succDetail').textContent='Table '+selectedTable.id+' reserved for '+name+'. '+(isVip?'+200 bonus Stars!':'See you there!');document.getElementById('succ').style.display='block';document.getElementById('bookBtn').style.display='none';showToast('🎉 Table '+selectedTable.id+' confirmed!');selectedTable=null;renderTables();}
+
+/* ROOMS */
+const ROOMS=[
+ {img:'1511512578047-dfb367046420',tag:'4 PLAYERS · 30 MIN',t:'Legacy Studio (Gen Z)',desc:'TikTok-ready hologram creator hub. Film with characters, share instantly.',price:'$15/person',status:'open'},
+ {img:'1606144042614-b2417e99c4e3',tag:'6 PLAYERS · 45 MIN',t:'Ink & Paint Studio (Gen Alpha)',desc:'Kids design a character that comes alive as a hologram.',price:'$12/child',status:'open'},
+ {img:'1542751371-adc38448a05e',tag:'2 PLAYERS · 60 MIN',t:'Heritage Reserve Lounge (Gen X)',desc:'Premium quiet lounge — nostalgia screening + reserve tasting.',price:'$28/person',status:'open'},
+ {img:'1556679343-c7306c1976bc',tag:'8 PLAYERS · 40 MIN',t:'Hologram Arena',desc:'Multiplayer mixed-reality game. Compete for Stars.',price:'$18/person',status:'soon'}
+];
+function renderRooms(){const g=document.getElementById('roomsGrid');g.innerHTML='';ROOMS.forEach(r=>{g.innerHTML+=`<div class="room"><div class="room-img" style="background-image:url('https://images.unsplash.com/photo-${r.img}?w=600&q=80')"><span class="room-tag mono">${r.tag}</span></div><div class="room-b"><div class="room-title">${r.t}</div><div class="room-desc">${r.desc}</div><div class="room-foot"><span class="room-price">${r.price}</span>${r.status==='open'?`<button class="btn-sm" onclick="bookRoom(this,'${r.t}')">Book</button>`:'<span class="rs rs-soon">Coming Soon</span>'}</div></div></div>`;});}
+function bookRoom(btn,name){btn.textContent='✓ Booked';btn.style.background='var(--gold)';btn.style.color='var(--dark)';btn.disabled=true;DB.recordSale(60);showToast('🎮 Booked: '+name);}
+
+/* COLLEGE */
+const COLLEGE=[
+ {i:'🆔',t:'Student Rate',d:'Flash your student ID for 20% off all drinks + instant Gold tier upgrade.'},
+ {i:'📚',t:'Study Lounge Access',d:'Reserve quiet study pods with free fast wifi & outlets — a daily reason to come.'},
+ {i:'🌙',t:'Late-Night Hours',d:'Open till 1 AM near campus during the semester. Finals-week 24/7 mode.'},
+ {i:'⚡',t:'Study Fuel Bundle',d:'Cold brew + snack + pin for $7.99. Refuel between classes.'},
+ {i:'🔁',t:'5th Visit Free',d:'Every 5th visit is on us — engineered to lock in weekly frequency.'},
+ {i:'📣',t:'Campus Ambassador',d:'Earn Stars + merch for posting. Turns students into your marketing team.'}
+];
+function renderCollege(){const g=document.getElementById('collegeGrid');g.innerHTML='';COLLEGE.forEach(c=>{g.innerHTML+=`<div class="cperk"><div class="cperk-i">${c.i}</div><div class="cperk-t">${c.t}</div><div class="cperk-d">${c.d}</div></div>`;});}
+
+/* CAMERA */
+let camStream=null;
+async function startCamera(){const v=document.getElementById('camVideo');try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});v.srcObject=camStream;document.getElementById('camPlaceholder').style.display='none';showToast('📷 Camera live — strike a pose!');}catch(e){showToast('Camera needs permission + the live (https) link');}}
+function snapPhoto(){const v=document.getElementById('camVideo');if(!camStream){showToast('Start the camera first');return;}const c=document.getElementById('camCanvas');const w=v.videoWidth||640,h=v.videoHeight||480;c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.save();ctx.translate(w,0);ctx.scale(-1,1);ctx.drawImage(v,0,0,w,h);ctx.restore();
+ // ears overlay
+ ctx.strokeStyle='#E8C66B';ctx.lineWidth=Math.max(4,w*0.012);const er=w*0.07,ey=h*0.16;ctx.beginPath();ctx.arc(w*0.4,ey,er,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(w*0.6,ey,er,0,Math.PI*2);ctx.stroke();
+ ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='bold '+Math.round(w*0.04)+'px Fredoka, sans-serif';ctx.textAlign='right';ctx.fillText('Disney Café × Starbucks',w-20,h-22);
+ const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='disney_cafe_selfie.png';a.click();showToast('📸 Photo saved!');}
+
+/* ADMIN RENDER */
+let salesChart,genChart,calcChart,sparks={};
+function renderAdmin(){const s=DB.sales();document.getElementById('kpiRevenue').textContent='$'+s.total.toLocaleString();document.getElementById('kpiTxns').textContent=s.txns.toLocaleString();document.getElementById('kpiOcc').textContent=DB.occupancy()+'%';document.getElementById('kpiMembers').textContent=DB.members().toLocaleString();renderSalesChart();renderGenChart();renderCities();renderMgmtTables();renderLedger();renderSparks();}
+function renderSalesChart(){const s=DB.sales();const labels=s.hourly.map(h=>h.hour+':00');const data=s.hourly.map(h=>h.amount);if(salesChart){salesChart.data.labels=labels;salesChart.data.datasets[0].data=data;salesChart.update('none');return;}salesChart=new Chart(document.getElementById('salesChart'),{type:'line',data:{labels,datasets:[{data,borderColor:'#E8C66B',backgroundColor:'rgba(232,198,107,.08)',fill:true,tension:.4,pointRadius:0,borderWidth:2.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(0,0,0,.8)',callbacks:{label:c=>' $'+c.parsed.y.toLocaleString()}}},scales:{x:{ticks:{color:'rgba(255,255,255,.3)',font:{size:9},maxTicksLimit:8},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'rgba(255,255,255,.3)',font:{size:10},callback:v=>'$'+(v/1000)+'k'},grid:{color:'rgba(255,255,255,.05)'}}}}});}
+function renderGenChart(){if(genChart)return;genChart=new Chart(document.getElementById('genChart'),{type:'doughnut',data:{labels:['Millennials/Gen X (45%)','Gen Z (30%)','Gen Alpha (10%)','Other (15%)'],datasets:[{data:[45,30,10,15],backgroundColor:['#E8C66B','#a5b4fc','#5eead4','rgba(255,255,255,.15)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,.6)',font:{size:10},padding:10,boxWidth:9}},tooltip:{callbacks:{label:c=>' '+c.label}}}}});}
+function renderCities(){const c=DB.cities();const el=document.getElementById('cityList');el.innerHTML='';c.slice().sort((a,b)=>b.idx-a.idx).forEach(ct=>{el.innerHTML+=`<div class="city-row"><div class="city-meta"><span class="city-name"><span class="city-flag">${ct.flag}</span>${ct.name}</span><span class="city-val">${ct.idx}</span></div><div class="city-bar"><div class="city-fill" style="width:${ct.idx}%"></div></div></div>`;});}
+function renderMgmtTables(){const el=document.getElementById('mgmtTables');el.innerHTML='';DB.tables().forEach(t=>{const b=document.createElement('div');b.className='mt '+t.status;b.innerHTML=t.id+'<span style="font-size:8px;opacity:.7">'+(t.status==='oc'?'busy':t.status==='vip'?'VIP':'free')+'</span>';b.onclick=()=>{let ns=t.status==='oc'?([4,9,15,22,28].includes(t.id)?'vip':'av'):'oc';DB.setTableStatus(t.id,ns);renderMgmtTables();renderTables();document.getElementById('kpiOcc').textContent=DB.occupancy()+'%';};el.appendChild(b);});}
+function renderLedger(){const el=document.getElementById('ledger');el.innerHTML='';const seed=[{time:'11:42',name:'Ava Thompson',type:'VIP Suite',city:'Orlando, FL',amt:42,vip:true},{time:'11:38',name:'Marcus Lee',type:'Table',city:'New York, NY',amt:18,vip:false},{time:'11:31',name:'Sofia Garcia',type:'Game Room',city:'Los Angeles, CA',amt:60,vip:false},{time:'11:25',name:'James Park',type:'Merch',city:'Chicago, IL',amt:34,vip:false},{time:'11:19',name:'Priya Patel',type:'VIP Suite',city:'Seattle, WA',amt:42,vip:true}];DB.bookings().forEach(b=>{const d=new Date(b.ts);seed.unshift({time:d.getHours()+':'+String(d.getMinutes()).padStart(2,'0'),name:b.name,type:b.vip?'VIP Suite':'Table',city:b.city,amt:b.amount,vip:b.vip});});seed.slice(0,8).forEach(r=>{el.innerHTML+=`<tr><td class="mono">${r.time}</td><td>${r.name}</td><td>${r.type}</td><td>${r.city}</td><td class="mono" style="color:#4ade80">$${r.amt}</td><td><span class="tag ${r.vip?'tag-vip':'tag-paid'}">${r.vip?'VIP':'Paid'}</span></td></tr>`;});}
+function renderSparks(){['spark1','spark2','spark3','spark4'].forEach((id,i)=>{if(sparks[id])return;const data=Array.from({length:20},()=>Math.random()*100);sparks[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:data.map((_,j)=>j),datasets:[{data,borderColor:['#E8C66B','#a5b4fc','#5eead4','#4ade80'][i],borderWidth:1.5,pointRadius:0,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}});});}
+
+/* LIVE SIM + toggle */
+const FN=['Emma R.','Liam K.','Olivia M.','Noah P.','Mia T.','Ethan L.','Zoe W.','Lucas H.','Aria S.','Kai J.'];
+const FI=['Galaxy Cold Foam','Castle Cold Brew','Custom Hologram','Family Package','VIP Tasting','Game Room','Merch Box','Enamel Pin'];
+const FC=['NY','LA','ORL','CHI','SEA','AUS'];
+function pushFeed(){if(currentView!=='admin'||!liveOn)return;const feed=document.getElementById('liveFeed');if(!feed)return;const amt=[6,12,15,8,30,39,60,34][Math.floor(Math.random()*8)];const item=FI[Math.floor(Math.random()*FI.length)],name=FN[Math.floor(Math.random()*FN.length)],city=FC[Math.floor(Math.random()*FC.length)],color=['#4ade80','#a5b4fc','#E8C66B','#5eead4'][Math.floor(Math.random()*4)];const div=document.createElement('div');div.className='feed-item';div.innerHTML=`<span class="feed-dot" style="background:${color}"></span><span class="feed-txt">${name} · ${item} <span style="color:var(--muted)">(${city})</span></span><span class="feed-amt">+$${amt}</span>`;feed.insertBefore(div,feed.firstChild);while(feed.children.length>12)feed.removeChild(feed.lastChild);DB.recordSale(amt);document.getElementById('kpiRevenue').textContent='$'+DB.sales().total.toLocaleString();document.getElementById('kpiTxns').textContent=DB.sales().txns.toLocaleString();}
+function jitterCities(){if(currentView!=='admin'||!liveOn)return;DB.cities().forEach(c=>{c.idx=Math.max(40,Math.min(99,c.idx+Math.round((Math.random()-0.5)*6)));});renderCities();}
+function toggleLive(){liveOn=!liveOn;const b=document.getElementById('liveBtn');b.textContent=liveOn?'⏸ Pause Live Sales':'▶ Resume Live Sales';b.classList.toggle('off',!liveOn);showToast(liveOn?'▶ Live tracking on':'⏸ Live tracking paused');}
+
+/* SIM */
+function fmtN(n){if(n>=1e6)return (n/1e6).toFixed(1)+'M';if(n>=1e3)return Math.round(n/1e3)+'K';return n;}
+function updateSim(){const c=parseInt(document.getElementById('simSlider').value);document.getElementById('simVal').textContent=fmtN(c);const gz=Math.min(100,Math.round(c/50000)),gx=Math.min(100,Math.round(c/70000)),ga=Math.min(100,Math.round(c/100000));document.getElementById('gzP').textContent=gz+'%';document.getElementById('gxP').textContent=gx+'%';document.getElementById('gaP').textContent=ga+'%';document.getElementById('gzB').style.width=gz+'%';document.getElementById('gxB').style.width=gx+'%';document.getElementById('gaB').style.width=ga+'%';}
+
+/* CALCULATOR */
+function updateCalc(){
+ const visits=parseFloat(document.getElementById('ci-visits').value);
+ const spend=parseInt(document.getElementById('ci-spend').value);
+ const cust=parseInt(document.getElementById('ci-cust').value);
+ const merch=parseInt(document.getElementById('ci-merch').value);
+ document.getElementById('cl1').textContent=visits;document.getElementById('cl2').textContent='$'+spend;document.getElementById('cl3').textContent=cust.toLocaleString();document.getElementById('cl4').textContent=merch+'%';
+ const weekly=visits*spend*cust;
+ const annual=weekly*52;
+ const ltv=visits*spend*52;
+ const merchRev=annual*(merch/100);
+ document.getElementById('co-week').textContent='$'+fmtN(Math.round(weekly));
+ document.getElementById('co-year').textContent='$'+fmtN(Math.round(annual));
+ document.getElementById('co-ltv').textContent='$'+Math.round(ltv).toLocaleString();
+ document.getElementById('co-merch').textContent='$'+fmtN(Math.round(merchRev));
+ const mult=Math.round(ltv/120);
+ document.getElementById('calcInsight').innerHTML=`A Disney <strong>park guest</strong> spends ~$120 once a year. A Disney <strong>Café regular</strong> at ${visits}×/week × $${spend} = <strong>$${Math.round(ltv).toLocaleString()}/year</strong> — that's <strong>${mult}× the annual value</strong> of a park visitor, repeated across <strong>${fmtN(cust)}</strong> customers for <strong>$${fmtN(Math.round(annual))}</strong> in recurring revenue.`;
+ // chart
+ const labels=[1,2,3,4,5,6,7];
+ const mk=(sp)=>labels.map(v=>Math.round(v*sp*52*cust/1e6));
+ if(calcChart){calcChart.data.datasets[0].data=mk(8);calcChart.data.datasets[1].data=mk(15);calcChart.data.datasets[2].data=mk(25);calcChart.update('none');return;}
+ calcChart=new Chart(document.getElementById('calcChart'),{type:'line',data:{labels:labels.map(v=>v+'×/wk'),datasets:[
+  {label:'$8',data:mk(8),borderColor:'#5eead4',backgroundColor:'transparent',tension:.3,borderWidth:2,pointRadius:2},
+  {label:'$15',data:mk(15),borderColor:'#a5b4fc',backgroundColor:'transparent',tension:.3,borderWidth:2,pointRadius:2},
+  {label:'$25',data:mk(25),borderColor:'#E8C66B',backgroundColor:'transparent',tension:.3,borderWidth:2,pointRadius:2}
+ ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'rgba(255,255,255,.6)',font:{size:11},boxWidth:10}},tooltip:{callbacks:{label:c=>' $'+c.dataset.label+'/visit: $'+c.parsed.y+'M/yr'}}},scales:{x:{ticks:{color:'rgba(255,255,255,.3)',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'rgba(255,255,255,.3)',font:{size:10},callback:v=>'$'+v+'M'},grid:{color:'rgba(255,255,255,.05)'}}}}});
+}
+
+/* REPORT */
+function exportReport(){const s=DB.sales();let csv='Hour,Revenue\n';s.hourly.forEach(h=>csv+=h.hour+':00,'+h.amount+'\n');csv+='\nCity,Footfall\n';DB.cities().forEach(c=>csv+=c.name+','+c.idx+'\n');csv+='\nTotal,'+s.total+'\nTransactions,'+s.txns+'\nOccupancy,'+DB.occupancy()+'%\nMembers,'+DB.members()+'\n';const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='disney_cafe_report.csv';a.click();showToast('⬇ Report exported');}
+function resetData(){DB.reset();renderTables();renderAdmin();showToast('↻ Demo reset');}
+
+/* UTIL */
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function tickClock(){const d=new Date();document.getElementById('liveClock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');}
+
+/* INIT */
+DB._read();renderShop();renderOffers();renderTables();renderRooms();renderCollege();
+document.getElementById('radius').addEventListener('input',function(){document.getElementById('radiusVal').textContent=parseFloat(this.value).toFixed(1)+' mi';renderOffers();});
+document.getElementById('simSlider').addEventListener('input',updateSim);updateSim();
+['ci-visits','ci-spend','ci-cust','ci-merch'].forEach(id=>document.getElementById(id).addEventListener('input',updateCalc));
+let dd=new Date();dd.setDate(dd.getDate()+1);dd.setHours(11,0,0,0);document.getElementById('bTime').value=dd.toISOString().slice(0,16);
+setInterval(tickClock,1000);tickClock();
+liveTimer=setInterval(pushFeed,2600);cityTimer=setInterval(jitterCities,3000);
+</script>
+</body>
+</html>
